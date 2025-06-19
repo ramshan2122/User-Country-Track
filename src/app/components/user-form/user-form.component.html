@@ -1,0 +1,42 @@
+<div class="p-4 max-w-2xl mx-auto">
+  <h2 class="text-xl font-bold mb-4 text-center">{{ isEdit ? 'Edit' : 'Create' }} User</h2>
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="grid gap-4">
+    <input class="form-control" formControlName="firstName" placeholder="First Name" />
+    <div *ngIf="userForm.get('firstName')?.touched && userForm.get('firstName')?.invalid" class="text-red-500">
+      <small *ngIf="userForm.get('firstName')?.errors?.['required']">First name is required.</small>
+      <small *ngIf="userForm.get('firstName')?.errors?.['minlength']">
+        First name must be at least 3 characters long.
+      </small>
+    </div>
+    <input class="form-control" formControlName="lastName" placeholder="Last Name" />
+    <div *ngIf="userForm.get('lastName')?.touched && userForm.get('lastName')?.invalid" class="text-red-500">
+      <small *ngIf="userForm.get('lastName')?.errors?.['required']">Last name is required.</small>
+      <small *ngIf="userForm.get('lastName')?.errors?.['minlength']">
+        Last name must be at least 1 characters long.
+      </small>
+    </div>
+    <input class="form-control" formControlName="email" placeholder="Email" [readonly]="isEdit" />
+    <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="text-red-500">
+      Valid email is required.
+    </div>
+    <select class="form-control" formControlName="country">
+      <option value="">Select Country</option>
+      @for(country of countries;track $index){
+<option [value]="country">{{ country }}</option>
+      }
+      
+    </select>
+    <div *ngIf="userForm.get('country')?.touched && userForm.get('country')?.invalid" class="text-red-500">
+      <small *ngIf="userForm.get('country')?.errors?.['required']" class="text-danger">
+        Country is required.
+      </small>
+    </div>
+    <div class="flex gap-2 justify-between">
+      <button class="btn btn-success" type="submit" [disabled]="userForm.invalid">
+        {{ isEdit ? 'Update' : 'Create' }}
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="cancel()">Cancel</button>
+      <button class="btn btn-primary " routerLink="/users">Home</button>
+    </div>
+  </form>
+</div>
