@@ -6,7 +6,7 @@
     <button class="btn btn-secondary" (click)="clearFilter()">Clear</button>
     <button class="btn btn-primary" (click)="navigateToCreate()">Create New User</button>
   </div>
-  @if(filteredUsers.length==0){
+  @if(searchTerm.trim() && filteredUsers.length==0){
 <div>
   <p class="alert-message">No users found matching your search.</p>
 </div>
