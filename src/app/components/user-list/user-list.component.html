@@ -1,44 +1,106 @@
-<div class="p-4 w-[90%] mx-auto">
-  <h2 class="text-center mb-5">-- User Country Track App --</h2>
-  <div class="mb-4 flex flex-col lg:flex-row items-center gap-2">
-    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearch($event)" placeholder="Search..."
-      class="form-control w-full lg:w-auto" />
-    <button class="btn btn-secondary" (click)="clearFilter()">Clear</button>
-    <button class="btn btn-primary" (click)="navigateToCreate()">Create New User</button>
+<div class="w-full max-w-[1600px] xl:max-w-[1900px] 2xl:max-w-[2400px] mx-auto p-4">
+  <h2 class="text-2xl font-bold text-center mb-5">-- User Country Track App --</h2>
+
+  <!-- Top Control Bar -->
+  <div class="w-full flex flex-wrap lg:flex-nowrap items-center justify-between gap-4 mb-6">
+
+    <!-- Search + Clear -->
+    <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full max-w-xl">
+      <mat-form-field appearance="outline" class="flex-grow min-w-[200px]">
+        <input
+          matInput
+          placeholder="Search User"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearch($event)" />
+        <button mat-icon-button matSuffix aria-label="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="warn"
+        class="h-[56px] min-w-[100px] clear"
+        (click)="clearFilter()">
+        Clear
+      </button>
+    </div>
+
+    <!-- Create User -->
+    <div class="w-full lg:w-auto">
+      <button
+        mat-raised-button
+        color="accent"
+        class="h-[56px] w-full lg:min-w-[200px] flex items-center justify-center gap-2 clear"
+        (click)="navigateToCreate()">
+        <mat-icon>person_add</mat-icon>
+        Create New User
+      </button>
+    </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered">
-      <thead>
-        <tr>
-          <th>Full Name</th>
-          <th>Email</th>
-          <th>Country</th>
-          <th>Created At</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (filteredUsers.length > 0) {
-        @for (user of filteredUsers; track $index) {
-        <tr>
-          <td>{{ user.firstName }} {{ user.lastName }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.country }}</td>
-          <td>{{ user.createdAt | date: 'medium' }}</td>
-          <td>
-            <button class="btn btn-sm btn-info m-2" (click)="editUser(user.email)">Edit</button>
-            <button class="btn btn-sm btn-danger m-2" (click)="deleteUser(user.email)">Delete</button>
-          </td>
-        </tr>
-        }
-        } @else if (searchTerm.trim()) {
-        <tr>
-          <td colspan="5" class="text-center text-danger">No users found matching your search.</td>
-        </tr>
-        }
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-full">
 
-      </tbody>
+      <!-- Full Name Column -->
+      <ng-container matColumnDef="fullName">
+        <th mat-header-cell *matHeaderCellDef>Full Name</th>
+        <td mat-cell *matCellDef="let user">{{ user.firstName }} {{ user.lastName }}</td>
+      </ng-container>
+
+      <!-- Email Column -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+      </ng-container>
+
+      <!-- Country Column -->
+      <ng-container matColumnDef="country">
+        <th mat-header-cell *matHeaderCellDef>Country</th>
+        <td mat-cell *matCellDef="let user">{{ user.country }}</td>
+      </ng-container>
+
+      <!-- Created At Column -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created At</th>
+        <td mat-cell *matCellDef="let user">{{ user.createdAt | date: 'medium' }}</td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="flex flex-wrap gap-2">
+            <button
+              mat-stroked-button
+              color="accent"
+              class="h-8 px-2 text-xs"
+              (click)="editUser(user.email)">
+              Edit
+            </button>
+            <button
+              mat-stroked-button
+              color="warn"
+              class="h-8 px-2 text-xs"
+              (click)="deleteUser(user.email)">
+              Delete
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Table Rows -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- Empty State -->
+      <tr *ngIf="filteredUsersList.length === 0 && trimmedSearch">
+        <td [attr.colspan]="displayedColumns.length" class="text-center text-red-500 p-4">
+          No users found matching your search.
+        </td>
+      </tr>
+
     </table>
   </div>
 </div>

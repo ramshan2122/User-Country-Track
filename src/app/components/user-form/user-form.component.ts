@@ -4,6 +4,12 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { CountryService } from '../../services/country.service';
 import { User } from '../../model/user.model';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
+
+import { ExitConfirmDialogComponent } from '../exit-confirm-dialog/exit-confirm-dialog.component';
+import { AlertdialogComponent } from '../alertdialog/alertdialog.component';
+
 declare var bootstrap: any;
 
 @Component({
@@ -16,14 +22,16 @@ export class UserFormComponent implements OnInit {
   userForm!: FormGroup;
   countries: string[] = [];
   isEdit = false;
-  private exitModal: any;
+  public exitModal: any;
 
   constructor(
-    private fb: FormBuilder,
-    private userService: UserService,
-    private countryService: CountryService,
-    private route: ActivatedRoute,
-    private router: Router
+
+    public fb: FormBuilder,
+    public userService: UserService,
+    public countryService: CountryService,
+    public route: ActivatedRoute,
+    public router: Router,
+    public dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -68,11 +76,17 @@ export class UserFormComponent implements OnInit {
     } else {
       const created = this.userService.createUser(user);
       if (!created) {
-        alert('A user with this email already exists.');
+        this.dialog.open(AlertdialogComponent, {
+          data: {
+            title: 'User Already Exists',
+            message: 'A user with this email already exists.'
+          }
+        });
         return;
       }
       this.router.navigate(['/users']);
     }
+
   }
 
 
@@ -102,5 +116,15 @@ export class UserFormComponent implements OnInit {
       this.exitModal.hide();
     }
   }
+  openExitDialog(): void {
+    const dialogRef = this.dialog.open(ExitConfirmDialogComponent);
 
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.confirmExit();
+      } else {
+        this.stayOnPage();
+      }
+    });
+  }
 }

@@ -1,48 +1,51 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '../../model/user.model';
 import { UserService } from '../../services/user.service';
-import { Subject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { MatTableDataSource } from '@angular/material/table';
+
+
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css'],
-  standalone:false
+  standalone: false
 })
-export class UserListComponent implements OnInit {
-  users: User[] = [];
-  filteredUsers: User[] = [];
-  searchTerm = '';
-  private searchSubject = new Subject<string>();
+export class UserListComponent {
+  public userService = inject(UserService);
+  public router = inject(Router);
+  dataSource = new MatTableDataSource<User>([]);
+  users = signal<User[]>(this.userService.getUsers());
+  searchTerm = signal('');
 
-  constructor(private userService: UserService, private router: Router) {}
+  displayedColumns: string[] = ['fullName', 'email', 'country', 'createdAt', 'actions'];
 
-  ngOnInit(): void {
-    this.users = this.userService.getUsers();
-    this.filteredUsers = [...this.users];
+  filteredUsers = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.users();
 
-    
-    this.searchSubject.pipe(debounceTime(300)).subscribe(term => {
-      this.filteredUsers = this.filterUsers(term);
+    return this.users().filter(user =>
+      `${user.firstName} ${user.lastName} ${user.email} ${user.country}`.toLowerCase().includes(term)
+    );
+  });
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.filteredUsers();
     });
   }
+  get filteredUsersList(): User[] {
+  return this.filteredUsers(); 
+}
+get trimmedSearch(): string {
+  return this.searchTerm().trim();
+}
 
   onSearch(term: string): void {
-    this.searchTerm = term;
-    this.searchSubject.next(term);
-  }
-
-  filterUsers(term: string): User[] {
-    const lowerTerm = term.toLowerCase();
-    return this.users.filter(user =>
-      `${user.firstName} ${user.lastName} ${user.email} ${user.country}`.toLowerCase().includes(lowerTerm)
-    );
+    this.searchTerm.set(term);
   }
 
   clearFilter(): void {
-    this.searchTerm = '';
-    this.filteredUsers = [...this.users];
+    this.searchTerm.set('');
   }
 
   editUser(email: string): void {
@@ -51,8 +54,7 @@ export class UserListComponent implements OnInit {
 
   deleteUser(email: string): void {
     this.userService.deleteUser(email);
-    this.users = this.userService.getUsers();
-    this.filteredUsers = this.filterUsers(this.searchTerm);
+    this.users.set(this.userService.getUsers());
   }
 
   navigateToCreate(): void {
